@@ -60,6 +60,16 @@ function formatHoursShort(h: number): string {
   return mins === 0 ? `${hrs}h` : `${hrs}h ${mins}m`;
 }
 
+function getCurrentTimeStr(): string {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function getCurrentDateStr(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export default function Home() {
   const [status, setStatus] = useState<Status | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -71,12 +81,17 @@ export default function Home() {
   const [actionLoading, setActionLoading] = useState(false);
   const [quote] = useState(() => getQuoteOfDay());
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [timeModalOpen, setTimeModalOpen] = useState(false);
+  const [timeModalType, setTimeModalType] = useState<"in" | "out">("in");
+  const [timeInput, setTimeInput] = useState("");
+  const [dateInput, setDateInput] = useState("");
   const [editingTodoId, setEditingTodoId] = useState<number | null>(null);
   const [editingTask, setEditingTask] = useState("");
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await fetch("/api/current-status");
+      const today = getCurrentDateStr();
+      const res = await fetch(`/api/current-status?date=${today}&_=${Date.now()}`, { cache: "no-store" });
       if (res.ok) setStatus(await res.json());
     } catch {
       setError("Failed to load status");
@@ -121,26 +136,47 @@ export default function Home() {
   }, [fetchStatus, fetchHistory, fetchSummary, fetchTodos]);
 
   useEffect(() => {
-    if (!historyModalOpen) return;
-    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setHistoryModalOpen(false);
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (timeModalOpen) setTimeModalOpen(false);
+        else if (historyModalOpen) setHistoryModalOpen(false);
+      }
+    };
     window.addEventListener("keydown", onEsc);
     return () => window.removeEventListener("keydown", onEsc);
-  }, [historyModalOpen]);
+  }, [historyModalOpen, timeModalOpen]);
 
-  const refreshAll = useCallback(() => {
-    fetchStatus();
-    fetchHistory();
-    fetchSummary();
+  const refreshAll = useCallback(async () => {
+    await Promise.all([fetchStatus(), fetchHistory(), fetchSummary()]);
   }, [fetchStatus, fetchHistory, fetchSummary]);
 
-  const handleTimeIn = async () => {
+  const openTimeModal = (type: "in" | "out") => {
+    setTimeModalType(type);
+    setTimeInput(getCurrentTimeStr());
+    setDateInput(getCurrentDateStr());
+    setTimeModalOpen(true);
+    setError(null);
+  };
+
+  const handleTimeInSubmit = async () => {
     setActionLoading(true);
     try {
-      const res = await fetch("/api/time-in", { method: "POST" });
-      if (res.ok) refreshAll();
-      else {
+      const res = await fetch("/api/time-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ time: timeInput, date: dateInput }),
+      });
+      if (res.ok) {
+        setTimeModalOpen(false);
+        await refreshAll();
+      } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || "Failed to time in");
+        if (data.error === "Already timed in today") {
+          setStatus({ timedIn: true });
+        } else {
+          fetchStatus();
+        }
       }
     } catch {
       setError("Failed to time in");
@@ -148,12 +184,22 @@ export default function Home() {
     setActionLoading(false);
   };
 
-  const handleTimeOut = async () => {
+  const handleTimeOutSubmit = async () => {
     setActionLoading(true);
     try {
-      const res = await fetch("/api/time-out", { method: "POST" });
-      if (res.ok) refreshAll();
-      else setError("Failed to time out");
+      const res = await fetch("/api/time-out", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ time: timeInput }),
+      });
+      if (res.ok) {
+        setTimeModalOpen(false);
+        await refreshAll();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to time out");
+        fetchStatus();
+      }
     } catch {
       setError("Failed to time out");
     }
@@ -299,7 +345,7 @@ export default function Home() {
           <div className="flex gap-2 mb-3 shrink-0">
             {!status?.timedIn ? (
               <button
-                onClick={handleTimeIn}
+                onClick={() => openTimeModal("in")}
                 disabled={actionLoading}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-sm font-medium text-white bg-[#4C1D95] hover:bg-[#5B21B6] disabled:opacity-60 disabled:cursor-not-allowed transition-all"
               >
@@ -308,7 +354,7 @@ export default function Home() {
               </button>
             ) : (
               <button
-                onClick={handleTimeOut}
+                onClick={() => openTimeModal("out")}
                 disabled={actionLoading}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-sm font-medium text-white bg-red-500 hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
               >
@@ -498,6 +544,59 @@ export default function Home() {
         </div>
         </div>
       </main>
+
+      {timeModalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50"
+          style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
+          onClick={() => setTimeModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-sm p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-800">{timeModalType === "in" ? "Time In" : "Time Out"}</h3>
+              <button
+                onClick={() => setTimeModalOpen(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              {timeModalType === "in" && (
+                <div>
+                  <label className="block text-xs text-gray-500 font-medium mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={dateInput}
+                    onChange={(e) => setDateInput(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-base focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="block text-xs text-gray-500 font-medium mb-1">Time</label>
+                <input
+                  type="time"
+                  value={timeInput}
+                  onChange={(e) => setTimeInput(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-base focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
+                />
+              </div>
+              <button
+                onClick={timeModalType === "in" ? handleTimeInSubmit : handleTimeOutSubmit}
+                disabled={actionLoading}
+                className={`w-full py-2.5 rounded-lg font-medium text-white flex items-center justify-center gap-2 ${timeModalType === "in" ? "bg-[#4C1D95] hover:bg-[#5B21B6]" : "bg-red-500 hover:bg-red-600"} disabled:opacity-60 disabled:cursor-not-allowed`}
+              >
+                {timeModalType === "in" ? <LogIn className="w-4 h-4" /> : <LogOut className="w-4 h-4" />}
+                Confirm {timeModalType === "in" ? "Time In" : "Time Out"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {historyModalOpen && (
         <div
