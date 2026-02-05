@@ -244,9 +244,9 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col bg-[#F9FAFB]">
-      <main className="flex-1 overflow-hidden py-4 px-4">
-        <div className="max-w-4xl mx-auto h-full flex flex-col">
+    <div className="fixed inset-0 flex flex-col bg-[#F9FAFB] overflow-hidden" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)", paddingLeft: "env(safe-area-inset-left)", paddingRight: "env(safe-area-inset-right)" }}>
+      <main className="flex-1 overflow-hidden py-4 px-4 min-h-0">
+        <div className="max-w-4xl mx-auto h-full flex flex-col min-h-0 w-full">
           <div className="shrink-0 mb-4">
             <h1 className="text-xl font-semibold text-gray-800">Hi! Chryssa</h1>
             <p className="text-sm text-gray-500">{today}</p>
@@ -263,8 +263,8 @@ export default function Home() {
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-4 flex-1 min-h-0">
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 order-2 md:order-2 flex flex-col min-h-0 overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0 overflow-hidden">
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 order-2 md:order-2 flex flex-col min-h-0 overflow-hidden min-w-0">
           <div className="flex items-center gap-2 mb-1 shrink-0">
             <Clock className="w-5 h-5 text-[#4C1D95]" />
             <h2 className="text-lg font-semibold text-gray-800">Daily Time Tracker</h2>
@@ -344,7 +344,7 @@ export default function Home() {
                 </button>
               )}
             </div>
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-2 pr-1 min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
               {history.length === 0 ? (
                 <p className="py-8 text-center text-gray-400 text-sm">No records yet</p>
               ) : (
@@ -409,7 +409,7 @@ export default function Home() {
           )}
         </section>
 
-        <section className="bg-white rounded-2xl shadow-md border-2 border-[#4C1D95]/20 p-6 order-first md:order-first">
+        <section className="bg-white rounded-2xl shadow-md border-2 border-[#4C1D95]/20 p-5 order-first md:order-first flex flex-col min-h-0 overflow-hidden min-w-0">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <ListTodo className="w-5 h-5 text-[#4C1D95]" />
@@ -439,7 +439,7 @@ export default function Home() {
               Add
             </button>
           </div>
-          <ul className="space-y-2 flex-1 overflow-y-auto min-h-0">
+          <ul className="space-y-2 flex-1 overflow-y-auto overflow-x-hidden min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
             {todos.length === 0 ? (
               <li className="py-8 text-center text-gray-400 text-sm">No tasks yet</li>
             ) : (
