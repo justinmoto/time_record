@@ -395,22 +395,22 @@ export default function Home() {
               </span>
             )}
           </div>
-          <div className="flex gap-2 mb-3">
+          <div className="flex gap-2 mb-3 min-w-0">
             <input
               type="text"
               value={todoInput}
               onChange={(e) => setTodoInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddTodo()}
               placeholder="Add a task..."
-              className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/20 focus:border-[#4C1D95] transition-all"
+              className="flex-1 min-w-0 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/20 focus:border-[#4C1D95] transition-all"
             />
             <button
               onClick={handleAddTodo}
               disabled={actionLoading || !todoInput.trim()}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-white bg-[#4C1D95] hover:bg-[#5B21B6] disabled:opacity-60 disabled:cursor-not-allowed transition-all hover:shadow-md"
+              className="shrink-0 flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl font-medium text-white bg-[#4C1D95] hover:bg-[#5B21B6] disabled:opacity-60 disabled:cursor-not-allowed transition-all"
             >
               <Plus className="w-4 h-4" />
-              Add
+              <span className="hidden sm:inline">Add</span>
             </button>
           </div>
           <ul className="space-y-2 md:flex-1 md:overflow-y-auto md:overflow-x-hidden md:min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
