@@ -15,6 +15,13 @@ export async function POST() {
   try {
     const now = new Date();
     const { date, datetime: timeIn } = toLocalDateTime(now);
+    const existing = await query<{ id: number }[]>(
+      "SELECT id FROM time_logs WHERE date = ? AND time_out IS NULL LIMIT 1",
+      [date]
+    );
+    if (existing.length > 0) {
+      return NextResponse.json({ error: "Already timed in today" }, { status: 400 });
+    }
     await query(
       "INSERT INTO time_logs (date, time_in) VALUES (?, ?)",
       [date, timeIn]

@@ -126,7 +126,10 @@ export default function Home() {
     try {
       const res = await fetch("/api/time-in", { method: "POST" });
       if (res.ok) refreshAll();
-      else setError("Failed to time in");
+      else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to time in");
+      }
     } catch {
       setError("Failed to time in");
     }
@@ -244,9 +247,19 @@ export default function Home() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#F9FAFB] overflow-hidden" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)", paddingLeft: "env(safe-area-inset-left)", paddingRight: "env(safe-area-inset-right)" }}>
-      <main className="flex-1 overflow-hidden py-4 px-4 min-h-0">
-        <div className="max-w-4xl mx-auto h-full flex flex-col min-h-0 w-full">
+    <div 
+      className="h-screen overflow-y-auto overflow-x-hidden md:overflow-hidden md:flex md:flex-col bg-[#F9FAFB] overscroll-contain" 
+      style={{ 
+        paddingTop: "env(safe-area-inset-top)", 
+        paddingBottom: "env(safe-area-inset-bottom)", 
+        paddingLeft: "env(safe-area-inset-left)", 
+        paddingRight: "env(safe-area-inset-right)",
+        WebkitOverflowScrolling: "touch",
+        touchAction: "pan-y"
+      }}
+    >
+      <main className="py-4 px-4 pb-8 md:flex-1 md:overflow-hidden md:min-h-0">
+        <div className="max-w-4xl mx-auto w-full md:h-full md:flex md:flex-col md:min-h-0">
           <div className="shrink-0 mb-4">
             <h1 className="text-xl font-semibold text-gray-800">Hi! Chryssa</h1>
             <p className="text-sm text-gray-500">{today}</p>
@@ -263,8 +276,8 @@ export default function Home() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0 overflow-hidden">
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 order-2 md:order-2 flex flex-col min-h-0 overflow-hidden min-w-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:flex-1 md:min-h-0 md:overflow-hidden">
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 order-2 md:order-2 md:flex md:flex-col md:min-h-0 md:overflow-hidden min-w-0">
           <div className="flex items-center gap-2 mb-1 shrink-0">
             <Clock className="w-5 h-5 text-[#4C1D95]" />
             <h2 className="text-lg font-semibold text-gray-800">Daily Time Tracker</h2>
@@ -328,7 +341,7 @@ export default function Home() {
             </>
           )}
 
-          <div className="mt-4 flex-1 min-h-0 flex flex-col">
+          <div className="mt-4 md:flex-1 md:min-h-0 md:flex md:flex-col">
             <div className="flex items-center justify-between mb-2 shrink-0">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-gray-500" />
@@ -344,7 +357,7 @@ export default function Home() {
                 </button>
               )}
             </div>
-            <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-2 pr-1 min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
+            <div className="space-y-2 pr-1 md:flex-1 md:overflow-y-auto md:overflow-x-hidden md:min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
               {history.length === 0 ? (
                 <p className="py-8 text-center text-gray-400 text-sm">No records yet</p>
               ) : (
@@ -368,48 +381,9 @@ export default function Home() {
             </div>
           </div>
 
-          {historyModalOpen && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-              onClick={() => setHistoryModalOpen(false)}
-            >
-              <div
-                className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[80vh] flex flex-col"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                  <h3 className="font-semibold text-gray-800">Full History</h3>
-                  <button
-                    onClick={() => setHistoryModalOpen(false)}
-                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="overflow-y-auto p-4 space-y-2">
-                  {history.map((h, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between gap-3 py-3 px-4 rounded-xl bg-gray-50 hover:bg-gray-100/80 transition-colors"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">{h.date}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {h.timeIn} → {h.timeOut}
-                        </p>
-                      </div>
-                      <span className="shrink-0 px-3 py-1.5 rounded-lg bg-[#4C1D95]/10 text-[#4C1D95] text-sm font-semibold">
-                        {h.totalHours === "-" ? "-" : `${h.totalHours}h`}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </section>
 
-        <section className="bg-white rounded-2xl shadow-md border-2 border-[#4C1D95]/20 p-5 order-first md:order-first flex flex-col min-h-0 overflow-hidden min-w-0">
+        <section className="bg-white rounded-2xl shadow-md border-2 border-[#4C1D95]/20 p-5 order-first md:order-first md:flex md:flex-col md:min-h-0 md:overflow-hidden min-w-0">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <ListTodo className="w-5 h-5 text-[#4C1D95]" />
@@ -439,7 +413,7 @@ export default function Home() {
               Add
             </button>
           </div>
-          <ul className="space-y-2 flex-1 overflow-y-auto overflow-x-hidden min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
+          <ul className="space-y-2 md:flex-1 md:overflow-y-auto md:overflow-x-hidden md:min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
             {todos.length === 0 ? (
               <li className="py-8 text-center text-gray-400 text-sm">No tasks yet</li>
             ) : (
@@ -512,6 +486,46 @@ export default function Home() {
         </div>
         </div>
       </main>
+
+      {historyModalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50"
+          style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
+          onClick={() => setHistoryModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md flex flex-col"
+            style={{ maxHeight: "min(85dvh, 85vh)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
+              <h3 className="font-semibold text-gray-800">Full History</h3>
+              <button
+                onClick={() => setHistoryModalOpen(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 touch-manipulation"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-y-auto overflow-x-hidden p-4 space-y-2 min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
+              {history.map((h, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between gap-3 py-3 px-4 rounded-xl bg-gray-50 min-w-0"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-800 truncate">{h.date}</p>
+                    <p className="text-xs text-gray-500 truncate">{h.timeIn} → {h.timeOut}</p>
+                  </div>
+                  <span className="shrink-0 px-3 py-1.5 rounded-lg bg-[#4C1D95]/10 text-[#4C1D95] text-sm font-semibold">
+                    {h.totalHours === "-" ? "-" : `${h.totalHours}h`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
