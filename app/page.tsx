@@ -48,6 +48,12 @@ function getQuoteOfDay() {
   return MOTIVATIONAL_QUOTES[dayOfYear % MOTIVATIONAL_QUOTES.length];
 }
 
+function formatHours(h: number): string {
+  const hrs = Math.floor(h);
+  const mins = Math.round((h - hrs) * 60);
+  return mins === 0 ? `${hrs}hrs` : `${hrs}hrs ${mins}mins`;
+}
+
 export default function Home() {
   const [status, setStatus] = useState<Status | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -310,7 +316,7 @@ export default function Home() {
             <>
               <div className="mt-4 p-4 rounded-xl bg-[#4C1D95]/5 border border-[#4C1D95]/10 shrink-0">
                 <p className="text-xs text-gray-500 font-medium mb-1">Total Hours</p>
-                <p className="text-2xl font-bold text-[#4C1D95]">{summary.total}h</p>
+                <p className="text-2xl font-bold text-[#4C1D95]">{formatHours(summary.total)}</p>
                 <div className="mt-3">
                   <div className="flex justify-between text-xs text-gray-500 mb-1">
                     <span>Goal: {HOURS_GOAL}h</span>
@@ -327,15 +333,15 @@ export default function Home() {
               <div className="mt-4 grid grid-cols-3 gap-3 shrink-0">
                 <div className="text-center p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-500 font-medium">Today</p>
-                  <p className="text-base font-semibold text-[#4C1D95]">{summary.today}h</p>
+                  <p className="text-base font-semibold text-[#4C1D95]">{formatHours(summary.today)}</p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-500 font-medium">This Week</p>
-                  <p className="text-base font-semibold text-[#4C1D95]">{summary.week}h</p>
+                  <p className="text-base font-semibold text-[#4C1D95]">{formatHours(summary.week)}</p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-500 font-medium">This Month</p>
-                  <p className="text-base font-semibold text-[#4C1D95]">{summary.month}h</p>
+                  <p className="text-base font-semibold text-[#4C1D95]">{formatHours(summary.month)}</p>
                 </div>
               </div>
             </>

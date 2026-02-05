@@ -16,19 +16,19 @@ export async function GET() {
     const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
     const todayRows = await query<{ total: number }[]>(
-      "SELECT COALESCE(SUM(total_hours), 0) as total FROM time_logs WHERE date = ?",
+      "SELECT COALESCE(SUM(ROUND(TIMESTAMPDIFF(SECOND, time_in, time_out) / 3600, 2)), 0) as total FROM time_logs WHERE date = ? AND time_out IS NOT NULL",
       [today]
     );
     const weekRows = await query<{ total: number }[]>(
-      "SELECT COALESCE(SUM(total_hours), 0) as total FROM time_logs WHERE date >= ?",
-      [weekStartStr]
+      "SELECT COALESCE(SUM(ROUND(TIMESTAMPDIFF(SECOND, time_in, time_out) / 3600, 2)), 0) as total FROM time_logs WHERE date >= ? AND date <= ? AND time_out IS NOT NULL",
+      [weekStartStr, today]
     );
     const monthRows = await query<{ total: number }[]>(
-      "SELECT COALESCE(SUM(total_hours), 0) as total FROM time_logs WHERE date >= ?",
-      [monthStart]
+      "SELECT COALESCE(SUM(ROUND(TIMESTAMPDIFF(SECOND, time_in, time_out) / 3600, 2)), 0) as total FROM time_logs WHERE date >= ? AND date <= ? AND time_out IS NOT NULL",
+      [monthStart, today]
     );
     const totalRows = await query<{ total: number }[]>(
-      "SELECT COALESCE(SUM(total_hours), 0) as total FROM time_logs"
+      "SELECT COALESCE(SUM(ROUND(TIMESTAMPDIFF(SECOND, time_in, time_out) / 3600, 2)), 0) as total FROM time_logs WHERE time_out IS NOT NULL"
     );
 
     const todayTotal = Number(todayRows[0]?.total ?? 0);
