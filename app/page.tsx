@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 type Status = { timedIn: boolean };
-type HistoryItem = { date: string; timeIn: string; timeOut: string; totalHours: string | number; dateRaw?: string };
+type HistoryItem = { date: string; timeIn: string; timeOut: string; totalHours: string | number; totalHoursDisplay?: string; dateRaw?: string };
 type Summary = { today: number; week: number; month: number; total: number };
 
 const HOURS_GOAL = 200;
@@ -373,7 +373,7 @@ export default function Home() {
                       </p>
                     </div>
                     <span className="shrink-0 px-2.5 py-1 rounded-md bg-[#4C1D95]/10 text-[#4C1D95] text-sm font-semibold">
-                      {h.totalHours === "-" ? "-" : `${h.totalHours}h`}
+                      {h.totalHoursDisplay ?? (h.totalHours === "-" ? "-" : `${h.totalHours}h`)}
                     </span>
                   </div>
                 ))
@@ -517,9 +517,9 @@ export default function Home() {
                     <p className="text-sm font-medium text-gray-800 truncate">{h.date}</p>
                     <p className="text-xs text-gray-500 truncate">{h.timeIn} → {h.timeOut}</p>
                   </div>
-                  <span className="shrink-0 px-3 py-1.5 rounded-lg bg-[#4C1D95]/10 text-[#4C1D95] text-sm font-semibold">
-                    {h.totalHours === "-" ? "-" : `${h.totalHours}h`}
-                  </span>
+                      <span className="shrink-0 px-3 py-1.5 rounded-lg bg-[#4C1D95]/10 text-[#4C1D95] text-sm font-semibold">
+                        {h.totalHoursDisplay ?? (h.totalHours === "-" ? "-" : `${h.totalHours}h`)}
+                      </span>
                 </div>
               ))}
             </div>
