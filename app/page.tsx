@@ -54,6 +54,12 @@ function formatHours(h: number): string {
   return mins === 0 ? `${hrs}hrs` : `${hrs}hrs ${mins}mins`;
 }
 
+function formatHoursShort(h: number): string {
+  const hrs = Math.floor(h);
+  const mins = Math.round((h - hrs) * 60);
+  return mins === 0 ? `${hrs}h` : `${hrs}h ${mins}m`;
+}
+
 export default function Home() {
   const [status, setStatus] = useState<Status | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -330,18 +336,18 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-3 gap-3 shrink-0">
-                <div className="text-center p-3 rounded-xl bg-gray-50">
-                  <p className="text-xs text-gray-500 font-medium">Today</p>
-                  <p className="text-base font-semibold text-[#4C1D95]">{formatHours(summary.today)}</p>
+              <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3 shrink-0">
+                <div className="text-center p-3 rounded-xl bg-gray-50 min-h-[72px] flex flex-col justify-center">
+                  <p className="text-xs text-gray-500 font-medium mb-0.5">Today</p>
+                  <p className="text-sm sm:text-base font-semibold text-[#4C1D95] whitespace-nowrap overflow-hidden text-ellipsis" title={formatHours(summary.today)}>{formatHoursShort(summary.today)}</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-gray-50">
-                  <p className="text-xs text-gray-500 font-medium">This Week</p>
-                  <p className="text-base font-semibold text-[#4C1D95]">{formatHours(summary.week)}</p>
+                <div className="text-center p-3 rounded-xl bg-gray-50 min-h-[72px] flex flex-col justify-center">
+                  <p className="text-xs text-gray-500 font-medium mb-0.5">This Week</p>
+                  <p className="text-sm sm:text-base font-semibold text-[#4C1D95] whitespace-nowrap overflow-hidden text-ellipsis" title={formatHours(summary.week)}>{formatHoursShort(summary.week)}</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-gray-50">
-                  <p className="text-xs text-gray-500 font-medium">This Month</p>
-                  <p className="text-base font-semibold text-[#4C1D95]">{formatHours(summary.month)}</p>
+                <div className="text-center p-3 rounded-xl bg-gray-50 min-h-[72px] flex flex-col justify-center">
+                  <p className="text-xs text-gray-500 font-medium mb-0.5">This Month</p>
+                  <p className="text-sm sm:text-base font-semibold text-[#4C1D95] whitespace-nowrap overflow-hidden text-ellipsis" title={formatHours(summary.month)}>{formatHoursShort(summary.month)}</p>
                 </div>
               </div>
             </>
